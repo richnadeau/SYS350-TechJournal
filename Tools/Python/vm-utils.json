@@ -1,0 +1,7 @@
+{ "vcenter": [
+    {
+"vcenterhost" : "vcenter.nadeau.local",
+"vcenteradmin" : "rich.nadeau-adm"
+}
+]
+}
