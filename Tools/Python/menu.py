@@ -1,4 +1,8 @@
 # Author of the this Python Script: richnadeau
+# Main sources below
+# https://vdc-repo.vmware.com/vmwb-repository/dcr-public/1ef6c336-7bef-477d-b9bb-caa1767d7e30/82521f49-9d9a-42b7-b19b-9e6cd9b30db1/vim.VirtualMachine.html#:~:text=VirtualMachine%20is%20the%20managed%20object,and%20controlling%20a%20virtual%20machine.
+# https://github.com/vmware/pyvmomi-community-samples/tree/master/samples
+
 def menu():
     print("[1] VCenter Info")
     print("[2] Session Details")
@@ -12,7 +16,7 @@ def vmmenu():
     print("[3] Take a Snapshot")
     print("[4] Delete a VM")
     print("[5] Reconfigure a VM")
-    print("[6] Change a VM's Network")
+    print("[6] Rename a VM")
     print("[0] Exit the VM Actions.")
 
 from time import sleep
@@ -64,6 +68,7 @@ while option != 0:
                     print("IP Address: ", i.summary.guest.ipAddress)
                     print("~~~~~~~~~~~~~~~~~~~~~")
     elif option == 4:
+        print()
         vmmenu()
         vmoption = int(input("Enter your option: "))
         
@@ -76,21 +81,34 @@ while option != 0:
                 poweronname=input("Enter the name of your VM that you want powered on (leave empty if you want all powered on): ")
                 
                 if len(poweronname) == 0:
-                    for i in vms:
-                        if i.guest.guestState == "running":
-                            print(i.name, " is already powered on, skipping!")
-                        else:
-                            print(i.name, " is not powered on, powering on now!")
-                            i.PowerOn()
-
+                    doublecheck = input("Are you sure you want to power on all VMs? (Y/N): ")
+                    if doublecheck == "Y":
+                        for i in vms:           
+                            if poweronname in str(i.name):
+                                if i.guest.guestState == "running":
+                                    print(i.name, " is already powered on, skipping!")
+                                    print("~~~~~~~~~~~~~~~~~~~~~")
+                                else:
+                                    print(i.name, " is not powered on, powering on now!")
+                                    i.PowerOn()
+                                    sleep(2)
+                                    print(i.name + "is now powered on!")
+                                    print("~~~~~~~~~~~~~~~~~~~~~")
+                    else:
+                        print("Cancelling Power Off Action")
+                        print("~~~~~~~~~~~~~~~~~~~~~")
                 else:
-                    for i in vms:               
-                        if poweronname in str(i.name):
-                            if i.guest.guestState == "running":
-                                print(i.name, " is already powered on, skipping!")
-                            else:
-                                print(i.name, " is not powered on, powering on now!")
-                                i.PowerOn()
+                    for i in vms:           
+                            if poweronname in str(i.name):
+                                if i.guest.guestState == "running":
+                                    print(i.name, " is already powered on, skipping!")
+                                    print("~~~~~~~~~~~~~~~~~~~~~")
+                                else:
+                                    print(i.name, " is not powered on, powering on now!")
+                                    i.PowerOn()
+                                    sleep(2)
+                                    print(i.name + "is now powered on!")
+                                    print("~~~~~~~~~~~~~~~~~~~~~")
 
 
             elif vmoption == 2:
@@ -98,24 +116,37 @@ while option != 0:
                 connect.si.RetrieveContent()
                 datacenter = connect.si.content.rootFolder.childEntity[0]
                 vms = datacenter.vmFolder.childEntity
-                poweroffname=input("Enter the name of your VM that you want powered off (leave empty if you want all powered on): ")
+                poweroffname=input("Enter the name of your VM that you want powered off (leave empty if you want all powered off): ")
                 
                 if len(poweroffname) == 0:
-                    for i in vms:
-                        if i.guest.guestState == "notRunning":
-                            print(i.name, " is already powered off, skipping!")
-                        else:
-                            print(i.name, " is not powered off, powering off now!")
-                            i.PowerOff()
-
+                    doublecheck = input("Are you sure you want to power off all VMs? (Y/N): ")
+                    if doublecheck == "Y":
+                        for i in vms:               
+                            if poweroffname in str(i.name):
+                                if i.guest.guestState == "notRunning":
+                                    print(i.name, " is already powered off, skipping!")
+                                    print("~~~~~~~~~~~~~~~~~~~~~")
+                                else:
+                                    print(i.name, " is not powered off, powering off now!")
+                                    i.PowerOff()
+                                    sleep(2)
+                                    print(i.name + "is now powered off!")
+                                    print("~~~~~~~~~~~~~~~~~~~~~")
+                    else:
+                        print("Cancelling Power Off Action")
+                        print("~~~~~~~~~~~~~~~~~~~~~")
                 else:
                     for i in vms:               
                         if poweroffname in str(i.name):
                             if i.guest.guestState == "notRunning":
                                 print(i.name, " is already powered off, skipping!")
+                                print("~~~~~~~~~~~~~~~~~~~~~")
                             else:
                                 print(i.name, " is not powered off, powering off now!")
                                 i.PowerOff()
+                                sleep(2)
+                                print(i.name + "is now powered off!")
+                                print("~~~~~~~~~~~~~~~~~~~~~")                    
 
             elif vmoption == 3:
                 print("You Have Chosen to take a Snapshot of a VM")
@@ -131,9 +162,9 @@ while option != 0:
                             naming=input("What would you like to name this snapshot? ")
                             print("Taking a snapshot of ", i.name, " called ", naming)
                             i.CreateSnapshot_Task(name=naming, description=None, memory=True, quiesce=False)
-                            print()
+                            print("~~~~~~~~~~~~~~~~~~~~~")
                         elif selection == "N":
-                            print()
+                            print("~~~~~~~~~~~~~~~~~~~~~")
 
             elif vmoption == 4:
                 print("You Have Chosen to Delete VM(s)")
@@ -153,11 +184,13 @@ while option != 0:
                                 sleep(10)
                                 i.Destroy_Task()
                                 print("VM has been successfully deleted")
+                                print("~~~~~~~~~~~~~~~~~~~~~")
                             else:
                                 print("VM name does not match, deletion cancelled.")
+                                print("~~~~~~~~~~~~~~~~~~~~~")
                         elif selection == "N":
                             print("Not deleting ", i.name)
-                            print()
+                            print("~~~~~~~~~~~~~~~~~~~~~")
 
             elif vmoption == 5:
                 print("You Have Chosen to Reconfigure a VM's Resources")
@@ -173,6 +206,7 @@ while option != 0:
                                 cpuchange=input("Do you  want to change the CPU count of " + vm.name + "? Current CPU Count is " + str(vm.config.hardware.numCPU) + " (Y/N):")
                                 if cpuchange == "Y":
                                     CPUnum=input("How many CPUs do you want for this VM: ")
+                                    print("~~~~~~~~~~~~~~~~~~~~~")
                                     Corenum=input("How many cores do you want on each CPU for this VM: ")
                                     cpuspec = vim.vm.ConfigSpec()
                                     cpuspec.numCPUs = int(CPUnum)
@@ -180,10 +214,10 @@ while option != 0:
                                     vm.Reconfigure(cpuspec)
                                     sleep(5)
                                     print(vm.name, "has been updated to have ", str(vm.config.hardware.numCPU), " CPUs.")
-                                    print()
+                                    print("~~~~~~~~~~~~~~~~~~~~~")
                                 elif cpuchange == "N":
                                     print("No changes will be done to the CPU count of ", vm.name)
-                                    print()
+                                    print("~~~~~~~~~~~~~~~~~~~~~")
                                 memchange=input("Do you  want to change the amount of memory on " + vm.name + "? Current amount of memory is " + str(vm.config.hardware.memoryMB/1024) + " GB (Y/N):")
                                 if memchange == "Y":
                                     memnum=input("How much memory do you want for this VM (in GB): ")
@@ -194,19 +228,38 @@ while option != 0:
                                     vm.Reconfigure(memspec)      
                                     sleep(5)
                                     print(vm.name, "has been updated to have ", str(vm.config.hardware.memoryMB/1024), " GB of memory.")
-                                    print()                              
+                                    print("~~~~~~~~~~~~~~~~~~~~~")                              
                                 elif memchange == "N":
                                     print("No changes will be done to the memory amount of ", vm.name)
+                                    print("~~~~~~~~~~~~~~~~~~~~~")
                             else:
                                 print(vm.name, " is currently powered on! You will need to power it down before reconfiguring.")
-                                print()
+                                print("~~~~~~~~~~~~~~~~~~~~~")
                         elif selection == "N":
-                            print()       
-            elif vmoption == 6:
-                print("W.I.P")
+                            print("~~~~~~~~~~~~~~~~~~~~~") 
 
+            elif vmoption == 6:
+                print("You Have Chosen to Rename a VM")
+                connect.si.RetrieveContent()
+                datacenter = connect.si.content.rootFolder.childEntity[0]
+                vms = datacenter.vmFolder.childEntity
+                renamevm=input("Enter the name of the VM(s) you want to rename: ")
+                print("~~~~~~~~~~~~~~~~~~~~~")
+                for vm in vms:
+                    if renamevm in str(vm.name):
+                        selection=input(vm.name + " is selected, are you sure you want to reconfigure this VM? (Y/N): ")
+                        if selection == "Y":
+                            newname=input("What would you like to rename " + vm.name + " to?: ")
+                            vm.Rename(newname)
+                            print("Renaming...")
+                            sleep(5)
+                            print("~~~~~~~~~~~~~~~~~~~~~")
+                        elif selection == "N":
+                            print(vm.name + " will not be renamed.")
+                            print("~~~~~~~~~~~~~~~~~~~~~")
             else:
                 print("Invalid option.")
+                print()
             print()
             vmmenu()
             vmoption = int(input("Enter your option: "))
