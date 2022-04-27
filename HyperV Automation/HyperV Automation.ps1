@@ -125,7 +125,7 @@ do
         $numba = $numba + 1
         Write-Host "$numba. " $VM.Name
     }
-    $selectVM = Read-Host "Select a VM to Power On"
+    $selectVM = Read-Host "Select a VM to Delete From Disk"
     $selectVM = $selectVM - 1
     $thevm = $VMs[$selectVM]
     Stop-VM -Name $thevm.VMName
